@@ -76,12 +76,18 @@ dueSoon = do
 
 cardInfo :: Parser Text
 cardInfo = do
-    card <- manyTill anyChar (try $ string " (")
-    cardUrl <- url
-    void $ char ')'
+    card <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
+    cardUrl <- parentheticalUrl
     void $ many1 $ noneOf "\n"
     void $ string "\n\n"
     return $ T.pack card <> "\n" <> cardUrl
+
+parentheticalUrl :: Parser Text
+parentheticalUrl = do
+    string " ("
+    cardUrl <- url
+    void $ char ')'
+    return cardUrl
 
 body :: Parser Text
 body = do
@@ -101,8 +107,9 @@ trelloUrl = do
 
 otherUrl :: Parser Text
 otherUrl = do
+    protocol <- try (string "http://") <|> string "https://"
     contents <- many1 $ noneOf ")"
-    return $ T.pack contents
+    return $ T.pack protocol <> T.pack contents
 
 uselessGreeting :: Parser ()
 uselessGreeting = do
