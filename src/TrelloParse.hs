@@ -41,7 +41,7 @@ header = do
 
 headerContinued :: Parser Text
 headerContinued = do
-    char '\t'
+    void $ char '\t'
     text <- many1 $ noneOf "\n"
     void newline
     return $ "\t" <> T.pack text <> "\n"
@@ -94,7 +94,7 @@ cardInfo = do
 
 parentheticalUrl :: Parser Text
 parentheticalUrl = do
-    string " ("
+    void $ string " ("
     cardUrl <- url
     void $ char ')'
     return cardUrl
