@@ -3,11 +3,18 @@ module TrelloParse (parseTrello) where
 import Control.Applicative ((<$>))
 import Control.Monad (void)
 import Data.Text (Text)
-import Data.Monoid ((<>))
+import Data.Monoid (Monoid, (<>), mempty, mappend)
 import Text.Parsec
 import Text.Parsec.Text
 
 import qualified Data.Text as T
+
+instance (Monoid a) => Monoid (ParsecT s u m a) where
+    mempty = return mempty
+    mappend pl pr = do
+        l <- pl
+        r <- pr
+        return $ mappend l r
 
 parseTrello :: String -> Text -> Either ParseError Text
 parseTrello name input = parse trelloParser name input
@@ -109,10 +116,10 @@ trelloUrl = do
     return $ root <> path
 
 otherUrl :: Parser Text
-otherUrl = do
-    protocol <- try (string "http://") <|> string "https://"
-    contents <- many1 $ noneOf ")"
-    return $ T.pack protocol <> T.pack contents
+otherUrl =
+    T.pack <$>
+        (try (string "http://") <|> string "https://") <>
+        (many1 $ noneOf ")")
 
 uselessGreeting :: Parser ()
 uselessGreeting = do
