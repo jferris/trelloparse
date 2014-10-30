@@ -72,7 +72,7 @@ changedDueDate = cardAction "changed the due date on the card"
 
 cardAction :: String -> Parser Text
 cardAction trigger = do
-    action <- manyTill (alphaNum <|> char ' ') (try $ string trigger)
+    action <- manyTill (alphaNum <|> oneOf " -") (try $ string trigger)
     void space
     card <- cardInfo
     contents <- try body <|> try (uselessReply >> return "")
