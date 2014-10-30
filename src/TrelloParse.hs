@@ -47,7 +47,7 @@ headerContinued = do
     return $ "\t" <> T.pack text <> "\n"
 
 section :: Parser Text
-section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived
+section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived <|> try addedYouToBoard
 
 commented :: Parser Text
 commented = cardAction "commented on the card"
@@ -77,6 +77,15 @@ cardAction trigger = do
     card <- cardInfo
     contents <- try body <|> try (uselessReply >> return "")
     return $ T.pack action <> T.pack trigger <> ":\n" <> card <> "\n" <> contents
+
+addedYouToBoard :: Parser Text
+addedYouToBoard = do
+    user <- manyTill (alphaNum <|> oneOf " -") (try $ string " added you to the board ")
+    board <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
+    cardUrl <- parentheticalUrl
+    void newline
+    void newline
+    return $ T.pack user <> " added you to the board:\n" <> T.pack board <> "\n" <> cardUrl <> "\n"
 
 dueSoon :: Parser Text
 dueSoon = do
