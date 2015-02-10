@@ -47,7 +47,7 @@ headerContinued = do
     return $ "\t" <> T.pack text <> "\n"
 
 section :: Parser Text
-section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived <|> try addedYouToBoard
+section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived <|> try addedYouToBoard <|> try closedTheBoard <|> try addedDueDate
 
 commented :: Parser Text
 commented = cardAction "commented on the card"
@@ -70,26 +70,38 @@ created = cardAction "created"
 changedDueDate :: Parser Text
 changedDueDate = cardAction "changed the due date on the card"
 
+addedDueDate :: Parser Text
+addedDueDate = cardAction "added a due date to the card"
+
 cardAction :: String -> Parser Text
 cardAction trigger = do
-    action <- manyTill (alphaNum <|> oneOf " -") (try $ string trigger)
+    action <- manyTill (alphaNum <|> oneOf " -'") (try $ string trigger)
     void space
     card <- cardInfo
     contents <- try body <|> try (uselessReply >> return "")
     return $ T.pack action <> T.pack trigger <> ":\n" <> card <> "\n" <> contents
 
 addedYouToBoard :: Parser Text
-addedYouToBoard = do
-    user <- manyTill (alphaNum <|> oneOf " -") (try $ string " added you to the board ")
+addedYouToBoard = boardAction "added you to the board"
+
+closedTheBoard :: Parser Text
+closedTheBoard = boardAction "closed the board"
+
+boardAction :: String -> Parser Text
+boardAction trigger = do
+    user <- manyTill (alphaNum <|> oneOf " -") (try $ string trigger)
+    void space
     board <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
     cardUrl <- parentheticalUrl
     void newline
     void newline
-    return $ T.pack user <> " added you to the board:\n" <> T.pack board <> "\n" <> cardUrl <> "\n"
+    return $ T.pack user <> T.pack trigger <> ": " <> T.pack board <> "\n" <> cardUrl <> "\n"
 
 dueSoon :: Parser Text
 dueSoon = do
-    void $ string "Due Soon\n\n"
+    void $ string "These cards are due soon"
+    void $ many1 $ noneOf "\n"
+    void newline
     card <- cardInfo
     return $ "The following card is due soon:\n" <> card <> "\n"
 
