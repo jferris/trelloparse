@@ -47,7 +47,7 @@ headerContinued = do
     return $ "\t" <> T.pack text <> "\n"
 
 section :: Parser Text
-section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived <|> try addedYouToBoard <|> try closedTheBoard <|> try addedDueDate
+section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived <|> try addedYouToBoard <|> try closedTheBoard <|> try addedDueDate <|> try removedYou
 
 commented :: Parser Text
 commented = cardAction "commented on the card"
@@ -60,6 +60,9 @@ archived = cardAction "archived the card"
 
 addedYou :: Parser Text
 addedYou = cardAction "added you to the card"
+
+removedYou :: Parser Text
+removedYou = cardAction "removed you from the card"
 
 mentionedYou :: Parser Text
 mentionedYou = cardAction "mentioned you on the card"
