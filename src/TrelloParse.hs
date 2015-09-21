@@ -115,9 +115,13 @@ cardInfo :: Parser Text
 cardInfo = do
     card <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
     cardUrl <- parentheticalUrl
+    void space
+    void $ choice $ map string ["on", "to", "in"]
+    void space
+    boardName <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
     void $ many1 $ noneOf "\n"
     void $ string "\n\n"
-    return $ T.pack card <> "\n" <> cardUrl
+    return $ T.pack card <> " on " <> T.pack boardName <> "\n" <> cardUrl
 
 parentheticalUrl :: Parser Text
 parentheticalUrl = do
