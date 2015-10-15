@@ -1,9 +1,8 @@
 module TrelloParse (parseTrello) where
 
-import Control.Applicative ((<$>))
 import Control.Monad (void)
 import Data.Text (Text)
-import Data.Monoid (Monoid, (<>), mempty, mappend)
+import Data.Monoid ((<>))
 import Text.Parsec
 import Text.Parsec.Text
 
@@ -108,8 +107,24 @@ dueSoon = do
     void $ string "These cards are due soon"
     void $ many1 $ noneOf "\n"
     void newline
-    card <- cardInfo
-    return $ "The following card is due soon:\n" <> card <> "\n"
+    cards <- cardDueSoon `sepBy1` char ' '
+    void newline
+    void newline
+    return $ "The following cards are due soon:\n" <> T.intercalate "\n\n" cards <> "\n"
+
+cardDueSoon :: Parser Text
+cardDueSoon = do
+    card <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
+    cardUrl <- parentheticalUrl
+    void (string " on " <?> "board")
+    board <- manyTill anyChar (lookAhead $ try $ parentheticalUrl)
+    void $ parentheticalUrl
+    void $ string " is due "
+    date <- dueDate
+    return $ T.pack card <> " on " <> T.pack board <> " is due " <> date <> "\n" <> cardUrl
+
+dueDate :: Parser Text
+dueDate = T.pack <$> manyTill anyChar (char '(') <* manyTill anyChar (char ')')
 
 cardInfo :: Parser Text
 cardInfo = do
