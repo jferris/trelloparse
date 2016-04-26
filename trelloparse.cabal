@@ -10,7 +10,7 @@ Build-Type:             Simple
 Library
   Default-Language:     Haskell2010
   HS-Source-Dirs:       src
-  GHC-Options:          -Wall -fno-warn-orphans
+  GHC-Options:          -Wall -Werror -fno-warn-orphans -O2
   Exposed-Modules:      TrelloParse
   Build-Depends:        base >= 4 && < 5
                       , parsec
@@ -19,6 +19,7 @@ Library
 
 Executable trelloparse
   Main-Is:              main.hs
+  GHC-Options:          -Wall -Werror -fno-warn-orphans -O2
   Build-Depends:        base
                       , trelloparse
                       , text
