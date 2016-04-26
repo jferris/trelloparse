@@ -16,7 +16,7 @@ instance (Monoid a) => Monoid (ParsecT s u m a) where
         return $ mappend l r
 
 parseTrello :: String -> Text -> Either ParseError Text
-parseTrello name input = parse trelloParser name input
+parseTrello = parse trelloParser
 
 trelloParser :: Parser Text
 trelloParser = do
@@ -46,7 +46,20 @@ headerContinued = do
     return $ "\t" <> T.pack text <> "\n"
 
 section :: Parser Text
-section = try commented <|> try moved <|> try changedDueDate <|> try dueSoon <|> try addedYou <|> try mentionedYou <|> try created <|> try archived <|> try addedYouToBoard <|> try closedTheBoard <|> try addedDueDate <|> try removedYou <|> try removedYouFromBoard
+section =
+    try commented
+    <|> try moved
+    <|> try changedDueDate
+    <|> try dueSoon
+    <|> try addedYou
+    <|> try mentionedYou
+    <|> try created
+    <|> try archived
+    <|> try addedYouToBoard
+    <|> try closedTheBoard
+    <|> try addedDueDate
+    <|> try removedYou
+    <|> try removedYouFromBoard
 
 commented :: Parser Text
 commented = cardAction "commented on the card"
@@ -80,7 +93,7 @@ cardAction trigger = do
     action <- manyTill (alphaNum <|> oneOf " -'.") (try $ string trigger)
     void space
     card <- cardInfo
-    contents <- try body <|> try (uselessReply >> return "")
+    contents <- try body <|> try (uselessReply >> return "") <|> try (return "")
     return $ T.pack action <> T.pack trigger <> ":\n" <> card <> "\n" <> contents
 
 addedYouToBoard :: Parser Text
